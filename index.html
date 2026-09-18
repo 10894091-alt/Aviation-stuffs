@@ -17,10 +17,7 @@
     --ink-dim:#8CA0BD;
     --ink-faint:#4C617F;
     --lift:#49E3C4;
-    --lift-dim:#1F5F52;
-    --drag:#FFA645;
     --drag2:#FFA645;
-    --amber-dim:#6B4A22;
     --warn:#FF5D5D;
     --accent:#5AC8FA;
     --radius:10px;
@@ -36,142 +33,138 @@
     color:var(--ink);
     font-family:'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height:100vh;
-    padding:22px 16px 40px;
+    padding:18px 16px 30px;
   }
-  .wrap{max-width:1000px;margin:0 auto;}
+  .wrap{max-width:900px;margin:0 auto;}
 
   header{
     display:flex;align-items:baseline;justify-content:space-between;
-    gap:12px;margin-bottom:16px;flex-wrap:wrap;
+    gap:12px;margin-bottom:12px;flex-wrap:wrap;
   }
-  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand{display:flex;align-items:baseline;gap:9px;}
   .brand .mark{
-    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
     color:var(--accent);letter-spacing:.02em;
-    border:1px solid var(--line);border-radius:6px;padding:3px 7px;
+    border:1px solid var(--line);border-radius:6px;padding:2px 6px;
   }
-  h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-0.01em;}
-  .subtitle{color:var(--ink-dim);font-size:13px;margin-top:2px;}
-  .headerctrls{display:flex;gap:8px;align-items:center;}
+  h1{font-size:18px;font-weight:700;margin:0;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-dim);font-size:12px;margin-top:1px;}
+  .headerctrls{display:flex;gap:7px;align-items:center;}
 
   button{
     font-family:'Space Grotesk',sans-serif;cursor:pointer;
     background:var(--panel2);color:var(--ink);
     border:1px solid var(--line);border-radius:7px;
-    padding:7px 12px;font-size:13px;font-weight:600;
+    padding:6px 11px;font-size:12.5px;font-weight:600;
     transition:background .15s,border-color .15s,color .15s;
   }
   button:hover{border-color:var(--accent);color:var(--accent);}
   button:active{transform:translateY(1px);}
-  button.on{background:rgba(90,200,250,0.12);border-color:var(--accent);color:var(--accent);}
+  button.on{background:rgba(90,200,250,0.14);border-color:var(--accent);color:var(--accent);}
   #resetBtn:hover{border-color:var(--warn);color:var(--warn);}
+
+  .chip{padding:4px 9px;font-size:11px;border-radius:6px;}
+  .chip.on{background:rgba(73,227,196,0.14);border-color:var(--lift);color:var(--lift);}
 
   .grid{
     display:grid;
     grid-template-columns: 1.42fr 1fr;
-    gap:14px;
+    grid-template-rows: auto auto;
+    gap:10px;
   }
   .panel{
     background:linear-gradient(180deg,var(--panel),var(--panel2));
     border:1px solid var(--line);border-radius:var(--radius);
-    padding:14px;
+    padding:11px;
   }
   .panel h2{
     font-family:'IBM Plex Mono',monospace;
-    font-size:11px;letter-spacing:.08em;color:var(--ink-dim);
-    margin:0 0 10px;font-weight:600;
+    font-size:10.5px;letter-spacing:.08em;color:var(--ink-dim);
+    margin:0 0 8px;font-weight:600;
     display:flex;align-items:center;justify-content:space-between;
   }
   .panel h2 .tag{color:var(--ink-faint);font-weight:400;}
 
   /* ---- view panel ---- */
   #viewCanvas{
-    display:block;width:100%;height:auto;aspect-ratio:560/380;
+    display:block;width:100%;height:auto;aspect-ratio:560/350;
     border-radius:7px;border:1px solid var(--line-soft);
   }
   .view-footer{
-    display:flex;justify-content:space-between;margin-top:9px;
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+    display:flex;justify-content:space-between;margin-top:7px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);
   }
   .view-footer b{color:var(--ink);font-weight:600;}
 
   /* ---- control panel ---- */
-  .shapebtns{display:flex;gap:6px;margin-bottom:12px;}
-  .shapebtns button{flex:1;padding:8px 4px;font-size:12px;}
+  .shapebtns{display:flex;gap:5px;margin-bottom:9px;}
+  .shapebtns button{flex:1;padding:6px 4px;font-size:11.5px;}
 
-  .slider-row{margin-bottom:11px;}
+  .slider-row{margin-bottom:8px;}
   .slider-row:last-child{margin-bottom:0;}
   .slider-label{
     display:flex;justify-content:space-between;align-items:baseline;
-    font-size:12.5px;color:var(--ink-dim);margin-bottom:4px;
+    font-size:12px;color:var(--ink-dim);margin-bottom:3px;
   }
   .slider-label .val{
-    font-family:'IBM Plex Mono',monospace;color:var(--ink);font-size:12.5px;font-weight:600;
+    font-family:'IBM Plex Mono',monospace;color:var(--ink);font-size:12px;font-weight:600;
   }
   input[type=range]{
     -webkit-appearance:none;appearance:none;width:100%;height:4px;
     background:var(--line);border-radius:3px;outline:none;
   }
   input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    -webkit-appearance:none;width:13px;height:13px;border-radius:50%;
     background:var(--accent);border:2px solid #08131F;cursor:pointer;
-    margin-top:-5px;box-shadow:0 0 0 3px rgba(90,200,250,0.15);
+    margin-top:-4.5px;box-shadow:0 0 0 3px rgba(90,200,250,0.15);
   }
   input[type=range]::-moz-range-thumb{
-    width:14px;height:14px;border-radius:50%;background:var(--accent);
+    width:13px;height:13px;border-radius:50%;background:var(--accent);
     border:2px solid #08131F;cursor:pointer;box-shadow:0 0 0 3px rgba(90,200,250,0.15);
   }
-  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:3px;}
 
-  .divider{height:1px;background:var(--line-soft);margin:12px 0;}
+  .divider{height:1px;background:var(--line-soft);margin:9px 0;}
 
-  .ar-preview{display:flex;align-items:center;gap:9px;margin-top:7px;}
+  .ar-preview{display:flex;align-items:center;gap:8px;margin-top:6px;}
   .ar-shape{
-    height:11px;flex:none;border-radius:3px;
+    height:10px;flex:none;border-radius:3px;
     background:linear-gradient(90deg,#2F6A86,var(--accent));
     transition:width .12s ease-out;
   }
-  .ar-hint{font-size:10px;color:var(--ink-faint);line-height:1.35;}
+  .ar-hint{font-size:9.5px;color:var(--ink-faint);line-height:1.3;}
 
-  /* ---- data panel ---- */
-  .data-grid{
-    display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;
+  /* ---- flat data strip (spans full width, row 2) ---- */
+  .data-strip-wrap{grid-column:1/3;}
+  .data-strip{
+    display:flex;flex-wrap:wrap;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;
   }
-  .data-cell{
-    background:var(--panel2);border:1px solid var(--line-soft);
-    border-radius:7px;padding:8px 10px;
+  .stat{
+    flex:1 1 100px;min-width:88px;padding:9px 12px;
+    border-right:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
   }
-  .data-cell .k{font-size:10.5px;color:var(--ink-dim);letter-spacing:.03em;font-family:'IBM Plex Mono',monospace;}
-  .data-cell .v{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;margin-top:2px;color:var(--ink);}
-  .data-cell .v.lift{color:var(--lift);}
-  .data-cell .v.drag{color:var(--drag2);}
-  .stall-strip{
-    margin-top:10px;padding:7px 10px;border-radius:7px;
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px;
-    text-align:center;letter-spacing:.05em;font-weight:600;
-    background:var(--panel2);border:1px solid var(--line-soft);color:var(--ink-faint);
-    transition:all .2s;
+  .stat:last-of-type{border-right:none;}
+  .stat .k{font-size:10px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;}
+  .stat .v{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;margin-top:2px;color:var(--ink);}
+  .stat .v.lift{color:var(--lift);}
+  .stat .v.drag{color:var(--drag2);}
+  .stall-tag{
+    flex:1 1 150px;min-width:150px;padding:9px 12px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:.04em;
+    color:var(--ink-faint);transition:all .2s;
   }
-  .stall-strip.active{
-    background:rgba(255,93,93,0.12);border-color:var(--warn);color:var(--warn);
-    animation:pulse 1s infinite;
-  }
+  .stall-tag.active{background:rgba(255,93,93,0.12);color:var(--warn);animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 
-  /* ---- force panel ---- */
-  #forceCanvas{display:block;width:100%;height:auto;aspect-ratio:300/220;}
-  .force-readouts{display:flex;gap:8px;margin-top:10px;}
-  .fr-item{flex:1;text-align:center;padding:8px 4px;border-radius:7px;background:var(--panel2);border:1px solid var(--line-soft);}
-  .fr-item .k{font-size:10px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;}
-  .fr-item .v{font-family:'IBM Plex Mono',monospace;font-size:14.5px;font-weight:600;margin-top:2px;}
-  .fr-item.lift .v{color:var(--lift);}
-  .fr-item.drag .v{color:var(--drag2);}
-  .fr-item.ratio .v{color:var(--ink);}
+  footer{margin-top:14px;font-size:11px;color:var(--ink-faint);text-align:center;line-height:1.6;}
 
-  footer{margin-top:16px;font-size:11.5px;color:var(--ink-faint);text-align:center;line-height:1.6;}
-
-  @media (max-width:760px){
+  @media (max-width:720px){
     .grid{grid-template-columns:1fr;}
+    .data-strip-wrap{grid-column:1;}
   }
 </style>
 </head>
@@ -196,8 +189,8 @@
 
     <!-- VIEW PANEL -->
     <div class="panel" style="grid-row:1;">
-      <h2>VIEW WINDOW <span class="tag">flow &amp; airfoil, edge view</span></h2>
-      <canvas id="viewCanvas" width="560" height="380"></canvas>
+      <h2>VIEW WINDOW <button id="forceToggle" class="chip">Force arrows: off</button></h2>
+      <canvas id="viewCanvas" width="560" height="350"></canvas>
       <div class="view-footer">
         <span>angle of attack <b id="aoaFooter">6.0°</b></span>
         <span>chord <b id="chordFooter">—</b></span>
@@ -251,36 +244,24 @@
       </div>
     </div>
 
-    <!-- DATA PANEL -->
-    <div class="panel" style="grid-row:2;">
-      <h2>FLIGHT DATA <span class="tag">computed coefficients</span></h2>
-      <div class="data-grid">
-        <div class="data-cell"><div class="k">LIFT COEFF. Cl</div><div class="v" id="clVal">—</div></div>
-        <div class="data-cell"><div class="k">DRAG COEFF. Cd</div><div class="v" id="cdVal">—</div></div>
-        <div class="data-cell"><div class="k">L / D RATIO</div><div class="v" id="ldVal">—</div></div>
-        <div class="data-cell"><div class="k">REYNOLDS NO.</div><div class="v" id="reVal">—</div></div>
-        <div class="data-cell"><div class="k">AIR DENSITY</div><div class="v" id="rhoVal">—</div></div>
-        <div class="data-cell"><div class="k">DYN. PRESSURE</div><div class="v" id="qVal">—</div></div>
-      </div>
-      <div class="stall-strip" id="stallStrip">FLOW ATTACHED — NO STALL</div>
-    </div>
-
-    <!-- FORCE PANEL -->
-    <div class="panel" style="grid-row:2;">
-      <h2>FORCES <span class="tag">lift · drag · resultant</span></h2>
-      <canvas id="forceCanvas" width="300" height="220"></canvas>
-      <div class="force-readouts">
-        <div class="fr-item lift"><div class="k">LIFT ↑</div><div class="v" id="liftVal">—</div></div>
-        <div class="fr-item drag"><div class="k">DRAG →</div><div class="v" id="dragVal">—</div></div>
-        <div class="fr-item ratio"><div class="k">RESULTANT</div><div class="v" id="resVal">—</div></div>
+    <!-- FLAT DATA STRIP -->
+    <div class="data-strip-wrap" style="grid-row:2;">
+      <div class="data-strip">
+        <div class="stat"><div class="k">Cl</div><div class="v" id="clVal">—</div></div>
+        <div class="stat"><div class="k">Cd</div><div class="v" id="cdVal">—</div></div>
+        <div class="stat"><div class="k">L / D</div><div class="v" id="ldVal">—</div></div>
+        <div class="stat"><div class="k">LIFT</div><div class="v lift" id="liftVal">—</div></div>
+        <div class="stat"><div class="k">DRAG</div><div class="v drag" id="dragVal">—</div></div>
+        <div class="stat"><div class="k">REYNOLDS</div><div class="v" id="reVal">—</div></div>
+        <div class="stall-tag" id="stallStrip">FLOW ATTACHED — NO STALL</div>
       </div>
     </div>
 
   </div>
 
   <footer>
-    Simplified thin-airfoil model with empirical stall and induced-drag corrections — built for classroom use, not flight design.<br>
-    Adapted in spirit from NASA Glenn Research Center's FoilSim.
+    Real potential-flow streamlines around a Kutta&#8211;Joukowski-mapped airfoil, with an empirical stall &amp; drag correction layered on top for the force numbers — built for classroom use, not flight design.<br>
+    Adapted in spirit (and flow math) from NASA Glenn Research Center's FoilSim.
   </footer>
 </div>
 
@@ -290,14 +271,15 @@
 
   /* ============================= STATE ============================= */
   const state = {
-    aoa: 6,          // degrees
-    camber: 3.5,      // percent
-    thickness: 12,    // percent
-    speed: 60,        // m/s
-    alt: 0,           // m
-    area: 18,         // m^2
-    ar: 8,            // aspect ratio
-    units: 'imperial' // 'imperial' | 'metric'
+    aoa: 6,
+    camber: 3.5,
+    thickness: 12,
+    speed: 60,
+    alt: 0,
+    area: 18,
+    ar: 8,
+    units: 'imperial',
+    showForces: false
   };
 
   const els = {};
@@ -305,25 +287,24 @@
     els[id] = document.getElementById(id);
   });
 
-  /* ============================= PHYSICS ============================= */
-  const RHO0 = 1.225;      // kg/m^3 sea level
-  const MU   = 1.81e-5;    // Pa*s air viscosity
-  const SCALE_HEIGHT = 8500; // m
-
   function toRad(d){ return d*Math.PI/180; }
+
+  /* ============================= AERODYNAMIC COEFFICIENTS (for the numbers) ============================= */
+  const RHO0 = 1.225;
+  const MU   = 1.81e-5;
+  const SCALE_HEIGHT = 8500;
 
   function computePhysics(s){
     const rho = RHO0 * Math.exp(-s.alt/SCALE_HEIGHT);
-    const q = 0.5*rho*s.speed*s.speed; // Pa
+    const q = 0.5*rho*s.speed*s.speed;
 
-    // zero-lift angle shift from camber (thin airfoil approximation)
     const alpha0 = -1.15*s.camber;
-    const ae = s.aoa - alpha0;         // effective angle of attack, deg
+    const ae = s.aoa - alpha0;
     const aeRad = toRad(ae);
 
     let cl = 2*Math.PI*Math.sin(aeRad);
 
-    const stallAngle = 16; // deg, symmetric threshold on effective AoA
+    const stallAngle = 16;
     const absAe = Math.abs(ae);
     let stallFactor = 1, stallDragAdd = 0, stalled = false;
     if (absAe > stallAngle){
@@ -333,9 +314,6 @@
       stallDragAdd = 0.0022*over*over;
     }
     cl = cl*stallFactor;
-
-    // finite-span (aspect ratio) correction — a lower-AR wing (shorter, stubbier)
-    // generates noticeably less lift and more drag than an ideal infinite wing
     cl = cl/(1 + Math.abs(cl)/(Math.PI*s.ar));
 
     const cd0 = 0.006 + 0.0035*Math.pow(s.thickness/12,2);
@@ -343,11 +321,11 @@
     const cdi = (cl*cl)/(Math.PI*oswald*s.ar);
     const cd = Math.max(0.004, cd0 + cdi + stallDragAdd);
 
-    const lift = cl*q*s.area;   // N
-    const drag = cd*q*s.area;   // N
+    const lift = cl*q*s.area;
+    const drag = cd*q*s.area;
     const ld = cl/cd;
 
-    const chord = Math.sqrt(s.area/s.ar); // m
+    const chord = Math.sqrt(s.area/s.ar);
     const reynolds = rho*s.speed*chord/MU;
 
     return {rho,q,alpha0,ae,cl,cd,lift,drag,ld,chord,reynolds,stalled,stallFactor};
@@ -360,9 +338,7 @@
     m2_to_ft2: v=>v*10.7639,
     n_to_lbf: v=>v*0.224809
   };
-
   function fmt(n, d){ return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}); }
-
   function fmtForce(nVal){
     if (state.units==='imperial'){
       const lb = conv.n_to_lbf(nVal);
@@ -370,16 +346,9 @@
     }
     return (Math.abs(nVal)>=1000? fmt(nVal,0) : fmt(nVal,1)) + ' N';
   }
-
-  function fmtSpeed(mps){
-    return state.units==='imperial' ? fmt(conv.mps_to_mph(mps),0)+' mph' : fmt(mps,0)+' m/s';
-  }
-  function fmtAlt(m){
-    return state.units==='imperial' ? fmt(conv.m_to_ft(m),0)+' ft' : fmt(m,0)+' m';
-  }
-  function fmtArea(m2){
-    return state.units==='imperial' ? fmt(conv.m2_to_ft2(m2),0)+' ft²' : fmt(m2,0)+' m²';
-  }
+  function fmtSpeed(mps){ return state.units==='imperial' ? fmt(conv.mps_to_mph(mps),0)+' mph' : fmt(mps,0)+' m/s'; }
+  function fmtAlt(m){ return state.units==='imperial' ? fmt(conv.m_to_ft(m),0)+' ft' : fmt(m,0)+' m'; }
+  function fmtArea(m2){ return state.units==='imperial' ? fmt(conv.m2_to_ft2(m2),0)+' ft²' : fmt(m2,0)+' m²'; }
   function fmtRe(re){
     const exp = Math.floor(Math.log10(re));
     const mant = re/Math.pow(10,exp);
@@ -389,18 +358,8 @@
     const map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
     return String(n).split('').map(c=>map[c]||c).join('');
   }
-  function fmtRho(rho){
-    return state.units==='imperial'
-      ? (rho*0.00194032).toFixed(4)+' slug/ft³'
-      : rho.toFixed(3)+' kg/m³';
-  }
-  function fmtQ(q){
-    return state.units==='imperial'
-      ? fmt(q*0.0208854,2)+' lb/ft²'
-      : fmt(q,0)+' Pa';
-  }
 
-  /* ============================= DATA / READOUT UPDATE ============================= */
+  /* ============================= READOUTS ============================= */
   function updateReadouts(){
     const p = computePhysics(state);
 
@@ -416,13 +375,9 @@
     document.getElementById('clVal').textContent = p.cl.toFixed(3);
     document.getElementById('cdVal').textContent = p.cd.toFixed(3);
     document.getElementById('ldVal').textContent = p.ld.toFixed(1);
-    document.getElementById('reVal').textContent = fmtRe(p.reynolds);
-    document.getElementById('rhoVal').textContent = fmtRho(p.rho);
-    document.getElementById('qVal').textContent = fmtQ(p.q);
-
     document.getElementById('liftVal').textContent = fmtForce(p.lift);
     document.getElementById('dragVal').textContent = fmtForce(p.drag);
-    document.getElementById('resVal').textContent = fmtForce(Math.sqrt(p.lift*p.lift+p.drag*p.drag));
+    document.getElementById('reVal').textContent = fmtRe(p.reynolds);
 
     document.getElementById('aoaFooter').textContent = state.aoa.toFixed(1)+'°';
     document.getElementById('chordFooter').textContent = (state.units==='imperial'
@@ -442,30 +397,115 @@
       footer.style.color = 'var(--ink-dim)';
     }
 
-    drawForcePanel(p);
     return p;
   }
 
-  /* ============================= SHAPE GEOMETRY ============================= */
-  function airfoilPoints(camberPct, thicknessPct, n){
-    // returns {upper:[{x,y}...], lower:[{x,y}...]} in chord-fraction space (x:0..1)
-    const m = camberPct/100;
-    const t = thicknessPct/100;
-    const upper = [], lower = [];
-    for (let i=0;i<=n;i++){
-      const x = 0.5*(1-Math.cos(Math.PI*i/n)); // cosine spacing
-      const yt = 5*t*(0.2969*Math.sqrt(x) -0.1260*x -0.3516*x*x +0.2843*x*x*x -0.1036*x*x*x*x);
-      const yc = 4*m*x*(1-x);
-      upper.push({x, y: yc+yt});
-      lower.push({x, y: yc-yt});
-    }
-    return {upper, lower};
+  /* ============================= FLOW FIELD ============================================
+     Ported from NASA Glenn's FoilSim: a circle in a "generating plane" is mapped through
+     z = zeta + 1/zeta (the Joukowski transform) into a cambered airfoil shape. A uniform
+     stream plus circulation — sized by the Kutta condition so flow leaves the trailing
+     edge smoothly — is solved around that circle, which is what produces the actual
+     curved streamlines seen around the wing (not an approximation of them).
+  ============================================================================================ */
+
+  function getCirc(camberPct, thicknessPct, aoaDeg){
+    const camval = camberPct/25;
+    const thkval = thicknessPct/25;
+    const ycval = camval/2;
+    const rval = thkval/4 + Math.sqrt((thkval/4)*(thkval/4) + ycval*ycval + 1);
+    const xcval = 1 - Math.sqrt(rval*rval - ycval*ycval);
+    const beta = Math.asin(ycval/rval)*180/Math.PI;
+    const gamval = 2*rval*Math.sin(toRad(aoaDeg+beta));
+    return {rval, xcval, ycval, gamval};
   }
 
-  /* ============================= VIEW CANVAS (airfoil + flow) ============================= */
+  function joukowskiMap(x,y){
+    const r2 = x*x+y*y;
+    return [x*(1+1/r2), y*(1-1/r2)];
+  }
+
+  function solveStreamY(fxg, psv, rval, gamval, aoaDeg){
+    let ynew = psv>=0 ? 10 : -10;
+    if (Math.abs(psv) < 0.001) ynew = aoaDeg<0 ? rval : -rval;
+    let fnew = 0.1, iter=0;
+    while (Math.abs(fnew) >= 1e-5 && iter<40){
+      iter++;
+      let rfac = fxg*fxg+ynew*ynew;
+      if (rfac < rval*rval) rfac = rval*rval+0.01;
+      fnew = psv - ynew*(1-rval*rval/rfac) - gamval*Math.log(Math.sqrt(rfac)/rval);
+      const deriv = -(1-rval*rval/rfac) - 2*ynew*ynew*rval*rval/(rfac*rfac) - gamval*ynew/rfac;
+      if (Math.abs(deriv) < 1e-9) break;
+      ynew = ynew - 0.5*fnew/deriv;
+    }
+    return ynew;
+  }
+
+  function mapGeneratingPoint(fxg, lyg, aoaRad, xcval, ycval){
+    const lrg = Math.hypot(fxg,lyg);
+    const lthg = Math.atan2(lyg,fxg);
+    const lxgt = lrg*Math.cos(lthg+aoaRad) + xcval;
+    const lygt = lrg*Math.sin(lthg+aoaRad) + ycval;
+    const m = joukowskiMap(lxgt,lygt);
+    const radm = Math.hypot(m[0],m[1]);
+    const thetm = Math.atan2(m[1],m[0]);
+    return [radm*Math.cos(thetm-aoaRad), radm*Math.sin(thetm-aoaRad)];
+  }
+
+  function buildAirfoilSurface(rval,xcval,ycval,aoaDeg,n){
+    const aoaRad = toRad(aoaDeg);
+    const pts = [];
+    for (let i=0;i<n;i++){
+      const th = (i/n)*Math.PI*2;
+      pts.push(mapGeneratingPoint(rval*Math.cos(th), rval*Math.sin(th), aoaRad, xcval, ycval));
+    }
+    return pts;
+  }
+
+  function buildStreamlines(rval,xcval,ycval,gamval,aoaDeg){
+    const aoaRad = toRad(aoaDeg);
+    const xsN = 64, xsMax = 8.2;
+    const xs = [];
+    for (let i=0;i<xsN;i++){
+      const t = (i/(xsN-1))*2-1;
+      xs.push(Math.sign(t)*Math.pow(Math.abs(t),1.5)*xsMax);
+    }
+    const psvList = [];
+    for (let k=1;k<=7;k++){
+      const v = 0.28*k + 0.045*k*k;
+      psvList.push(v); psvList.push(-v);
+    }
+    const lines = [];
+    for (const psv of psvList){
+      const pts = [];
+      for (const fxg of xs){
+        const lyg = solveStreamY(fxg, psv, rval, gamval, aoaDeg);
+        pts.push(mapGeneratingPoint(fxg, lyg, aoaRad, xcval, ycval));
+      }
+      lines.push({psv, pts});
+    }
+    return lines;
+  }
+
+  let flowCache = null;
+  function rebuildFlow(){
+    const {rval,xcval,ycval,gamval} = getCirc(state.camber, state.thickness, state.aoa);
+    const surface = buildAirfoilSurface(rval,xcval,ycval,state.aoa,120);
+    const streamlines = buildStreamlines(rval,xcval,ycval,gamval,state.aoa);
+
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    for (const p of surface){
+      if (p[0]<minX) minX=p[0]; if (p[0]>maxX) maxX=p[0];
+      if (p[1]<minY) minY=p[1]; if (p[1]>maxY) maxY=p[1];
+    }
+    const desiredChordPx = 235;
+    const scale = desiredChordPx/(maxX-minX);
+    flowCache = { surface, streamlines, scale, cx0:(minX+maxX)/2, cy0:(minY+maxY)/2 };
+  }
+
+  /* ============================= VIEW CANVAS ============================= */
   const viewCanvas = document.getElementById('viewCanvas');
   const vctx = viewCanvas.getContext('2d');
-  const V_W = 560, V_H = 380; // logical drawing units (matches CSS aspect-ratio)
+  const V_W = 560, V_H = 350;
   (function(){
     const dpr = window.devicePixelRatio || 1;
     viewCanvas.width = V_W*dpr;
@@ -473,273 +513,123 @@
     vctx.scale(dpr,dpr);
   })();
 
-  // particle flow lanes
-  const N_PARTICLES = 110;
-  const particles = [];
-  for (let i=0;i<N_PARTICLES;i++){
-    particles.push({
-      x: Math.random()*V_W,
-      y0: (Math.random()-0.5)*300,
-      speedJ: 0.8+Math.random()*0.5
-    });
+  const pivotX = V_W*0.33, pivotY = V_H*0.44;
+  let dashPhase = 0;
+
+  function toCanvas(pt){
+    return [ pivotX + (pt[0]-flowCache.cx0)*flowCache.scale,
+             pivotY - (pt[1]-flowCache.cy0)*flowCache.scale ];
+  }
+
+  function drawArrow(ctx,x1,y1,x2,y2,color,width){
+    const len = Math.hypot(x2-x1,y2-y1);
+    ctx.strokeStyle = color; ctx.lineWidth = width;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    if (len<3) return;
+    const ang = Math.atan2(y2-y1,x2-x1), headLen = 9;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-headLen*Math.cos(ang-0.4), y2-headLen*Math.sin(ang-0.4));
+    ctx.lineTo(x2-headLen*Math.cos(ang+0.4), y2-headLen*Math.sin(ang+0.4));
+    ctx.closePath(); ctx.fill();
   }
 
   function drawView(){
-    // background sky gradient
+    if (!flowCache) rebuildFlow();
+
     const g = vctx.createLinearGradient(0,0,0,V_H);
-    g.addColorStop(0,'#0E1D30');
-    g.addColorStop(1,'#0A1522');
-    vctx.fillStyle = g;
-    vctx.fillRect(0,0,V_W,V_H);
-
-    // faint horizon reference line
-    const pivotX = V_W*0.30, pivotY = V_H*0.40;
-    vctx.strokeStyle = 'rgba(140,160,189,0.18)';
-    vctx.setLineDash([6,7]);
-    vctx.lineWidth = 1.5;
-    vctx.beginPath();
-    vctx.moveTo(0,pivotY); vctx.lineTo(V_W,pivotY);
-    vctx.stroke();
-    vctx.setLineDash([]);
-
-    const chordPx = 260;
-    const leX = pivotX - 0.25*chordPx;
-    const teX = pivotX + 0.75*chordPx;
-    const p = computePhysics(state);
-    const alphaRad = toRad(state.aoa);
-
-    /* ---- flow particles (drawn first, behind airfoil) ---- */
-    const pxPerFrame = 1.6 + (state.speed/140)*3.0;
-    const sigmaThick = 88;
-    vctx.lineWidth = 2;
-    for (const pt of particles){
-      pt.x += pxPerFrame*pt.speedJ;
-      if (pt.x > V_W+30){ pt.x = -30 - Math.random()*60; pt.y0 = (Math.random()-0.5)*300; }
-
-      function disp(x){
-        const dx = x-pivotX;
-        const proxAirfoil = Math.exp(-(dx*dx)/(2*sigmaThick*sigmaThick));
-        const thicknessPush = Math.sign(pt.y0||1)*(state.thickness/12)*15*proxAirfoil*Math.exp(-(pt.y0*pt.y0)/(2*85*85));
-        let downwash = 0;
-        if (x>teX){
-          const behind = Math.min(1,(x-teX)/190);
-          const proxCenter = Math.exp(-(pt.y0*pt.y0)/(2*90*90));
-          downwash = p.cl*10*behind*proxCenter;
-          if (p.stalled) downwash += (Math.random()-0.5)*18*(1-p.stallFactor)*behind*proxCenter;
-        }
-        let upwash = 0;
-        if (x<leX){
-          const ahead = Math.min(1,(leX-x)/110);
-          const proxCenter = Math.exp(-(pt.y0*pt.y0)/(2*75*75));
-          upwash = -p.cl*3.5*ahead*proxCenter;
-        }
-        return pt.y0 + thicknessPush + downwash + upwash;
-      }
-
-      const y2 = disp(pt.x);
-      const y1 = disp(pt.x-16);
-      const speedNorm = Math.min(1, state.speed/140);
-      const alpha = 0.24+0.45*speedNorm;
-      vctx.strokeStyle = 'rgba(90,200,250,'+alpha.toFixed(2)+')';
-      vctx.beginPath();
-      vctx.moveTo(pt.x-16, pivotY+y1);
-      vctx.lineTo(pt.x, pivotY+y2);
-      vctx.stroke();
-    }
-
-    /* ---- airfoil shape ---- */
-    const {upper, lower} = airfoilPoints(state.camber, state.thickness, 44);
-    vctx.save();
-    vctx.translate(pivotX, pivotY);
-    vctx.rotate(alphaRad);
-
-    vctx.beginPath();
-    upper.forEach((pt,i)=>{
-      const rx = pt.x*chordPx - 0.25*chordPx;
-      const ry = -pt.y*chordPx;
-      if (i===0) vctx.moveTo(rx,ry); else vctx.lineTo(rx,ry);
-    });
-    for (let i=lower.length-1;i>=0;i--){
-      const rx = lower[i].x*chordPx - 0.25*chordPx;
-      const ry = -lower[i].y*chordPx;
-      vctx.lineTo(rx,ry);
-    }
-    vctx.closePath();
-
-    const fg = vctx.createLinearGradient(-chordPx*0.25,-40,chordPx*0.75,40);
-    fg.addColorStop(0,'#2C3E56');
-    fg.addColorStop(0.5,'#3B516D');
-    fg.addColorStop(1,'#25344A');
-    vctx.fillStyle = fg;
-    vctx.fill();
-    vctx.strokeStyle = p.stalled ? '#FF5D5D' : '#5AC8FA';
-    vctx.lineWidth = 2.4;
-    vctx.stroke();
-
-    // chord reference line (dashed, local)
-    vctx.strokeStyle = 'rgba(231,238,248,0.35)';
-    vctx.setLineDash([4,4]);
-    vctx.lineWidth = 1;
-    vctx.beginPath();
-    vctx.moveTo(-0.25*chordPx,0);
-    vctx.lineTo(0.75*chordPx,0);
-    vctx.stroke();
-    vctx.setLineDash([]);
-
-    vctx.restore();
-
-    // AoA arc + label at pivot
-    vctx.save();
-    vctx.translate(pivotX,pivotY);
-    vctx.strokeStyle = '#FFA645';
-    vctx.lineWidth = 1.6;
-    vctx.beginPath();
-    vctx.arc(0,0,42,0,-alphaRad,alphaRad>0);
-    vctx.stroke();
-    vctx.fillStyle = '#FFA645';
-    vctx.font = "600 15px 'IBM Plex Mono', monospace";
-    const lx = 52*Math.cos(-alphaRad/2), ly = 52*Math.sin(-alphaRad/2);
-    vctx.fillText('α '+state.aoa.toFixed(1)+'°', lx, ly);
-    vctx.restore();
+    g.addColorStop(0,'#0E1D30'); g.addColorStop(1,'#0A1522');
+    vctx.fillStyle = g; vctx.fillRect(0,0,V_W,V_H);
 
     // upstream airflow direction cue
     vctx.save();
     vctx.font = "600 12px 'IBM Plex Mono', monospace";
     vctx.fillStyle = 'rgba(90,200,250,0.75)';
-    vctx.fillText('AIRFLOW', 14, pivotY-64);
+    vctx.fillText('AIRFLOW', 14, pivotY-58);
     vctx.strokeStyle = 'rgba(90,200,250,0.6)';
     vctx.lineWidth = 1.6;
     for (let i=0;i<3;i++){
-      const ax = 14+i*13, ay = pivotY-50;
+      const ax = 14+i*13, ay = pivotY-46;
       vctx.beginPath();
       vctx.moveTo(ax,ay-6); vctx.lineTo(ax+9,ay); vctx.lineTo(ax,ay+6);
       vctx.stroke();
     }
     vctx.restore();
 
-    // downstream label so the post-wing flow region reads clearly
-    vctx.save();
-    vctx.font = "500 11px 'IBM Plex Mono', monospace";
-    vctx.fillStyle = 'rgba(231,238,248,0.35)';
-    vctx.fillText('wake / downwash', teX+18, pivotY+ (V_H-pivotY)*0.55);
-    vctx.restore();
+    // streamlines — real potential-flow paths, animated with marching dashes
+    const speedNorm = Math.min(1, state.speed/140);
+    dashPhase -= 0.7 + speedNorm*2.0;
+    vctx.lineWidth = 1.6;
+    for (const line of flowCache.streamlines){
+      const near = Math.max(0, 1 - Math.abs(line.psv)/4.2);
+      const alpha = 0.16 + 0.42*near;
+      vctx.strokeStyle = 'rgba(90,200,250,'+alpha.toFixed(2)+')';
+      vctx.setLineDash([7,6]);
+      vctx.lineDashOffset = dashPhase;
+      vctx.beginPath();
+      line.pts.forEach((p,i)=>{
+        const c = toCanvas(p);
+        if (i===0) vctx.moveTo(c[0],c[1]); else vctx.lineTo(c[0],c[1]);
+      });
+      vctx.stroke();
+    }
+    vctx.setLineDash([]);
+
+    // airfoil (filled, real Joukowski-mapped shape)
+    const p = computePhysics(state);
+    vctx.beginPath();
+    flowCache.surface.forEach((pt,i)=>{
+      const c = toCanvas(pt);
+      if (i===0) vctx.moveTo(c[0],c[1]); else vctx.lineTo(c[0],c[1]);
+    });
+    vctx.closePath();
+    const fg = vctx.createLinearGradient(pivotX-120,pivotY-40,pivotX+120,pivotY+40);
+    fg.addColorStop(0,'#2C3E56'); fg.addColorStop(0.5,'#3B516D'); fg.addColorStop(1,'#25344A');
+    vctx.fillStyle = fg; vctx.fill();
+    vctx.strokeStyle = p.stalled ? '#FF5D5D' : '#5AC8FA';
+    vctx.lineWidth = 2.2;
+    vctx.stroke();
+
+    // force arrows overlaid on the wing
+    if (state.showForces){
+      const refMax = Math.max(Math.abs(p.lift), Math.abs(p.drag), 1);
+      const maxLen = 78;
+      const sc = maxLen/refMax;
+      const liftLen = p.lift*sc, dragLen = p.drag*sc;
+      const ax = pivotX, ay = pivotY;
+
+      drawArrow(vctx, ax, ay, ax, ay-liftLen, '#49E3C4', 3);
+      drawArrow(vctx, ax, ay, ax+dragLen, ay, '#FFA645', 3);
+
+      vctx.font = "600 12px 'IBM Plex Mono', monospace";
+      vctx.fillStyle = '#49E3C4';
+      vctx.fillText('L '+fmtForce(p.lift), ax+8, ay-liftLen-6);
+      vctx.fillStyle = '#FFA645';
+      vctx.fillText('D '+fmtForce(p.drag), ax+dragLen+8, ay+16);
+
+      vctx.fillStyle = '#5AC8FA';
+      vctx.beginPath(); vctx.ellipse(ax,ay,3.5,3.5,0,0,Math.PI*2); vctx.fill();
+    }
 
     requestAnimationFrame(drawView);
   }
 
-  /* ============================= FORCE CANVAS ============================= */
-  const forceCanvas = document.getElementById('forceCanvas');
-  const fctx = forceCanvas.getContext('2d');
-  const F_W = 300, F_H = 220; // logical drawing units (matches CSS aspect-ratio)
-  (function(){
-    const dpr = window.devicePixelRatio || 1;
-    forceCanvas.width = F_W*dpr;
-    forceCanvas.height = F_H*dpr;
-    fctx.scale(dpr,dpr);
-  })();
-
-  function niceNumber(x){
-    if (x<=0) return 1;
-    const exp = Math.floor(Math.log10(x));
-    const f = x/Math.pow(10,exp);
-    let nf;
-    if (f<1.5) nf=1; else if (f<3) nf=2; else if (f<7) nf=5; else nf=10;
-    return nf*Math.pow(10,exp);
-  }
-
-  function drawForcePanel(p){
-    fctx.clearRect(0,0,F_W,F_H);
-    fctx.fillStyle = '#0D1826';
-    fctx.fillRect(0,0,F_W,F_H);
-
-    const cx = F_W*0.5, cy = F_H*0.58;
-    const maxArrowPx = Math.min(F_W,F_H)*0.34;
-
-    const refMax = Math.max(Math.abs(p.lift), Math.abs(p.drag), 1);
-    const outerRingValue = niceNumber(refMax*1.3);
-    const ringStep = outerRingValue/3;
-    const scale = maxArrowPx/outerRingValue;
-
-    // rings
-    fctx.strokeStyle = 'rgba(140,160,189,0.16)';
-    fctx.lineWidth = 1;
-    fctx.font = "500 15px 'IBM Plex Mono', monospace";
-    fctx.fillStyle = 'rgba(140,160,189,0.55)';
-    for (let i=1;i<=3;i++){
-      const r = ringStep*i*scale;
-      fctx.beginPath();
-      fctx.setLineDash([3,5]);
-      fctx.arc(cx,cy,r,0,Math.PI*2);
-      fctx.stroke();
-    }
-    fctx.setLineDash([]);
-    fctx.fillText(fmtForce(ringStep*3), cx+ringStep*3*scale*0.70, cy-6);
-
-    // axes
-    fctx.strokeStyle = 'rgba(231,238,248,0.22)';
-    fctx.lineWidth = 1.4;
-    fctx.beginPath();
-    fctx.moveTo(cx-maxArrowPx*1.25,cy); fctx.lineTo(cx+maxArrowPx*1.25,cy);
-    fctx.moveTo(cx,cy-maxArrowPx*1.25); fctx.lineTo(cx,cy+maxArrowPx*1.25);
-    fctx.stroke();
-
-    // lift arrow (up, canvas -y)
-    const liftLen = p.lift*scale;
-    drawArrow(fctx, cx,cy, cx, cy-liftLen, '#49E3C4', 3);
-    // drag arrow (right)
-    const dragLen = p.drag*scale;
-    drawArrow(fctx, cx,cy, cx+dragLen, cy, '#FFA645', 3);
-    // resultant (dashed, combined)
-    fctx.save();
-    fctx.setLineDash([5,4]);
-    drawArrow(fctx, cx,cy, cx+dragLen, cy-liftLen, 'rgba(231,238,248,0.75)', 1.8, true);
-    fctx.restore();
-
-    // center wing glyph
-    fctx.fillStyle = '#5AC8FA';
-    fctx.beginPath();
-    fctx.ellipse(cx,cy,10,3.2,0,0,Math.PI*2);
-    fctx.fill();
-
-    // small compass labels
-    fctx.font = "600 12px 'IBM Plex Mono', monospace";
-    fctx.fillStyle = 'rgba(140,160,189,0.7)';
-    fctx.fillText('flow →', cx+maxArrowPx*1.25-46, cy+18);
-  }
-
-  function drawArrow(ctx,x1,y1,x2,y2,color,width,skipHead){
-    const len = Math.hypot(x2-x1,y2-y1);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-    ctx.stroke();
-    if (len<3 || skipHead) return;
-    const ang = Math.atan2(y2-y1,x2-x1);
-    const headLen = 9;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(x2,y2);
-    ctx.lineTo(x2-headLen*Math.cos(ang-0.4), y2-headLen*Math.sin(ang-0.4));
-    ctx.lineTo(x2-headLen*Math.cos(ang+0.4), y2-headLen*Math.sin(ang+0.4));
-    ctx.closePath();
-    ctx.fill();
-  }
-
   /* ============================= EVENTS ============================= */
-  function bindSlider(id, key, isInt){
+  function bindSlider(id, key, isInt, affectsFlow){
     els[id].addEventListener('input', ()=>{
       state[key] = isInt ? parseInt(els[id].value,10) : parseFloat(els[id].value);
+      if (affectsFlow) rebuildFlow();
       updateReadouts();
     });
   }
-  bindSlider('aoa','aoa',false);
-  bindSlider('camber','camber',false);
-  bindSlider('thickness','thickness',true);
-  bindSlider('speed','speed',true);
-  bindSlider('alt','alt',true);
-  bindSlider('area','area',true);
-  bindSlider('ar','ar',false);
+  bindSlider('aoa','aoa',false,true);
+  bindSlider('camber','camber',false,true);
+  bindSlider('thickness','thickness',true,true);
+  bindSlider('speed','speed',true,false);
+  bindSlider('alt','alt',true,false);
+  bindSlider('area','area',true,false);
+  bindSlider('ar','ar',false,false);
 
   document.querySelectorAll('.shapebtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -747,6 +637,7 @@
       state.thickness = parseFloat(btn.dataset.thickness);
       els.camber.value = state.camber;
       els.thickness.value = state.thickness;
+      rebuildFlow();
       updateReadouts();
     });
   });
@@ -757,14 +648,22 @@
     updateReadouts();
   });
 
+  document.getElementById('forceToggle').addEventListener('click', function(){
+    state.showForces = !state.showForces;
+    this.textContent = 'Force arrows: ' + (state.showForces ? 'on' : 'off');
+    this.classList.toggle('on', state.showForces);
+  });
+
   const DEFAULTS = {aoa:6,camber:3.5,thickness:12,speed:60,alt:0,area:18,ar:8};
   document.getElementById('resetBtn').addEventListener('click', ()=>{
     Object.assign(state, DEFAULTS);
     Object.keys(DEFAULTS).forEach(k=>{ if(els[k]) els[k].value = DEFAULTS[k]; });
+    rebuildFlow();
     updateReadouts();
   });
 
   /* ============================= INIT ============================= */
+  rebuildFlow();
   updateReadouts();
   requestAnimationFrame(drawView);
 
