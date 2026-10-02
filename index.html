@@ -63,7 +63,8 @@
   button.on{background:rgba(90,200,250,0.14);border-color:var(--accent);color:var(--accent);}
   #resetBtn:hover{border-color:var(--warn);color:var(--warn);}
 
-  .chip{padding:4px 9px;font-size:11px;border-radius:6px;}
+  .chipset{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;}
+  .chip{padding:4px 8px;font-size:10.5px;}
   .chip.on{background:rgba(73,227,196,0.14);border-color:var(--lift);color:var(--lift);}
 
   .grid{
@@ -189,7 +190,13 @@
 
     <!-- VIEW PANEL -->
     <div class="panel" style="grid-row:1;">
-      <h2>VIEW WINDOW <button id="forceToggle" class="chip">Force arrows: off</button></h2>
+      <h2>VIEW WINDOW
+        <span class="chipset">
+          <button id="forceToggle" class="chip">Forces: off</button>
+          <button id="velToggle" class="chip">Velocity: off</button>
+          <button id="pressureToggle" class="chip">Pressure: off</button>
+        </span>
+      </h2>
       <canvas id="viewCanvas" width="560" height="350"></canvas>
       <div class="view-footer">
         <span>angle of attack <b id="aoaFooter">6.0°</b></span>
@@ -279,7 +286,9 @@
     area: 18,
     ar: 8,
     units: 'imperial',
-    showForces: false
+    showForces: false,
+    showVelocity: false,
+    showPressure: false
   };
 
   const els = {};
@@ -451,6 +460,34 @@
     return [radm*Math.cos(thetm-aoaRad), radm*Math.sin(thetm-aoaRad)];
   }
 
+  function psiAt(fxg, lyg, rval, gamval){
+    let rfac = fxg*fxg+lyg*lyg;
+    if (rfac < rval*rval) rfac = rval*rval+0.01;
+    return lyg*(1-rval*rval/rfac) + gamval*Math.log(Math.sqrt(rfac)/rval);
+  }
+
+  // General local flow velocity at ANY (fxg,lyg) point in the generating plane, expressed
+  // in the final display frame. u = d(psi)/dy, v = -d(psi)/dx gives the velocity in the
+  // local (un-rotated) frame; the Jacobian of the full rotate->translate->map->unrotate
+  // chain (taken numerically, since that chain is already validated) carries it through
+  // to real on-screen x/y. Returns [vx, vy, speed] — speed is nondimensional, ->1 far away.
+  function velocityAt(fxg, lyg, rval, gamval, aoaRad, xcval, ycval){
+    const h = 1e-4;
+    const uLocal = (psiAt(fxg,lyg+h,rval,gamval) - psiAt(fxg,lyg-h,rval,gamval))/(2*h);
+    const vLocal = -(psiAt(fxg+h,lyg,rval,gamval) - psiAt(fxg-h,lyg,rval,gamval))/(2*h);
+    const Px = mapGeneratingPoint(fxg+h,lyg,aoaRad,xcval,ycval);
+    const Mx = mapGeneratingPoint(fxg-h,lyg,aoaRad,xcval,ycval);
+    const Py = mapGeneratingPoint(fxg,lyg+h,aoaRad,xcval,ycval);
+    const My = mapGeneratingPoint(fxg,lyg-h,aoaRad,xcval,ycval);
+    const dPdfxg0 = (Px[0]-Mx[0])/(2*h), dPdfxg1 = (Px[1]-Mx[1])/(2*h);
+    const dPdlyg0 = (Py[0]-My[0])/(2*h), dPdlyg1 = (Py[1]-My[1])/(2*h);
+    const vx = dPdfxg0*uLocal + dPdlyg0*vLocal;
+    const vy = dPdfxg1*uLocal + dPdlyg1*vLocal;
+    return [vx, vy, Math.hypot(vx,vy)];
+  }
+
+  function lerpPoint(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]; }
+
   function buildAirfoilSurface(rval,xcval,ycval,aoaDeg,n){
     const aoaRad = toRad(aoaDeg);
     const pts = [];
@@ -461,7 +498,12 @@
     return pts;
   }
 
-  function buildStreamlines(rval,xcval,ycval,gamval,aoaDeg){
+  // Builds the streamlines, each sample carrying both its position AND its local physical
+  // speed (so motion along the line can be animated proportional to real flow speed).
+  // When stalled, streamlines on the separating side are frozen/jittered past the body's
+  // midpoint instead of following the smooth potential-flow curve — the same trick the
+  // original FoilSim uses to show separated flow — so the break is visually unmistakable.
+  function buildStreamlines(rval,xcval,ycval,gamval,aoaDeg,stalled,sepSign){
     const aoaRad = toRad(aoaDeg);
     const xsN = 64, xsMax = 8.2;
     const xs = [];
@@ -476,31 +518,133 @@
     }
     const lines = [];
     for (const psv of psvList){
-      const pts = [];
+      const onSepSide = stalled && Math.sign(psv) === sepSign;
+      const pts = [], speeds = [];
+      let separated = false, holdX = 0, holdY = 0;
+      const seedJ = Math.random()*1000;
       for (const fxg of xs){
         const lyg = solveStreamY(fxg, psv, rval, gamval, aoaDeg);
-        pts.push(mapGeneratingPoint(fxg, lyg, aoaRad, xcval, ycval));
+        let pt = mapGeneratingPoint(fxg, lyg, aoaRad, xcval, ycval);
+
+        if (onSepSide && !separated && pt[0] > 0.05){
+          separated = true; holdX = pt[0]; holdY = pt[1];
+        }
+
+        if (separated){
+          const dist = Math.max(0, pt[0]-holdX);
+          const amp = 0.12*Math.min(1, dist*0.55);
+          const jitter = (Math.sin(dist*3.1+seedJ) + 0.6*Math.sin(dist*7.9+seedJ*1.7))*amp;
+          pt = [pt[0], holdY + jitter];
+          speeds.push(0.28 + Math.random()*0.3); // sluggish, turbulent wake speed
+        } else {
+          const v = velocityAt(fxg, lyg, rval, gamval, aoaRad, xcval, ycval);
+          speeds.push(v[2]);
+        }
+        pts.push(pt);
       }
-      lines.push({psv, pts});
+      lines.push({psv, pts, speeds, separated});
     }
     return lines;
   }
 
+  function buildPressureRings(rval,xcval,ycval,gamval,aoaDeg){
+    const aoaRad = toRad(aoaDeg);
+    const multipliers = [1.035, 1.12, 1.25, 1.42, 1.65];
+    const alphas =      [0.5,   0.36, 0.25, 0.16, 0.09];
+    const nTheta = 72;
+    const rings = [];
+    multipliers.forEach((m, ri)=>{
+      const pts = [];
+      for (let i=0;i<nTheta;i++){
+        const th = (i/nTheta)*Math.PI*2;
+        const fxg = rval*m*Math.cos(th), lyg = rval*m*Math.sin(th);
+        const pos = mapGeneratingPoint(fxg, lyg, aoaRad, xcval, ycval);
+        const v = velocityAt(fxg, lyg, rval, gamval, aoaRad, xcval, ycval);
+        const cp = 1 - v[2]*v[2];
+        pts.push({pos, cp});
+      }
+      rings.push({alpha: alphas[ri], pts});
+    });
+    return rings;
+  }
+
+  function cpColor(cp, alpha){
+    const c = Math.max(-3, Math.min(1.2, cp));
+    let r,g,b;
+    if (c <= 0){
+      const t = c/-3;
+      r = 231 + (56-231)*t;  g = 238 + (150-238)*t;  b = 248 + (255-248)*t;
+    } else {
+      const t = c/1.2;
+      r = 231 + (255-231)*t; g = 238 + (70-238)*t;   b = 248 + (60-248)*t;
+    }
+    return 'rgba('+(r|0)+','+(g|0)+','+(b|0)+','+alpha+')';
+  }
+
   let flowCache = null;
   function rebuildFlow(){
+    const p = computePhysics(state);
     const {rval,xcval,ycval,gamval} = getCirc(state.camber, state.thickness, state.aoa);
+    const aoaRad = toRad(state.aoa);
+    const sepSign = p.ae >= 0 ? 1 : -1;
     const surface = buildAirfoilSurface(rval,xcval,ycval,state.aoa,120);
-    const streamlines = buildStreamlines(rval,xcval,ycval,gamval,state.aoa);
+    const streamlines = buildStreamlines(rval,xcval,ycval,gamval,state.aoa,p.stalled,sepSign);
+    const pressureRings = buildPressureRings(rval,xcval,ycval,gamval,state.aoa);
 
     let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    for (const p of surface){
-      if (p[0]<minX) minX=p[0]; if (p[0]>maxX) maxX=p[0];
-      if (p[1]<minY) minY=p[1]; if (p[1]>maxY) maxY=p[1];
+    for (const pt of surface){
+      if (pt[0]<minX) minX=pt[0]; if (pt[0]>maxX) maxX=pt[0];
+      if (pt[1]<minY) minY=pt[1]; if (pt[1]>maxY) maxY=pt[1];
     }
     const desiredChordPx = 235;
     const scale = desiredChordPx/(maxX-minX);
-    flowCache = { surface, streamlines, scale, cx0:(minX+maxX)/2, cy0:(minY+maxY)/2 };
+    flowCache = {
+      surface, streamlines, pressureRings, scale,
+      cx0:(minX+maxX)/2, cy0:(minY+maxY)/2,
+      rval, xcval, ycval, gamval, aoaRad
+    };
+    if (particles.length) particles.forEach(prt=>{
+      prt.prevCanvas = null;
+      const n = flowCache.streamlines[prt.lineIdx].pts.length;
+      if (prt.idx > n-2) prt.idx = Math.random()*2;
+    });
   }
+
+  let particles = [];
+  function initParticles(){
+    particles = [];
+    const perLine = 3;
+    flowCache.streamlines.forEach((line, li)=>{
+      for (let k=0;k<perLine;k++){
+        particles.push({ lineIdx: li, idx: Math.random()*(line.pts.length-2), prevCanvas: null });
+      }
+    });
+  }
+
+  // Theoretical max |lift| or |drag| across the full slider range, used as a FIXED
+  // reference so the force arrows genuinely grow/shrink with the real force instead of
+  // re-normalizing to fill the same length every frame.
+  function computeForceCeiling(){
+    let maxF = 1;
+    const probe = {aoa:0, camber:0, thickness:12, speed:140, alt:0, area:40, ar:8};
+    for (let ar=4; ar<=14; ar+=2){
+      probe.ar = ar;
+      for (let cam=0; cam<=8; cam+=2){
+        probe.camber = cam;
+        for (let th=2; th<=20; th+=6){
+          probe.thickness = th;
+          for (let aoa=-20; aoa<=25; aoa+=1){
+            probe.aoa = aoa;
+            const pp = computePhysics(probe);
+            if (Math.abs(pp.lift) > maxF) maxF = Math.abs(pp.lift);
+            if (Math.abs(pp.drag) > maxF) maxF = Math.abs(pp.drag);
+          }
+        }
+      }
+    }
+    return maxF*1.08;
+  }
+  const FORCE_CEILING = computeForceCeiling();
 
   /* ============================= VIEW CANVAS ============================= */
   const viewCanvas = document.getElementById('viewCanvas');
@@ -514,7 +658,6 @@
   })();
 
   const pivotX = V_W*0.33, pivotY = V_H*0.44;
-  let dashPhase = 0;
 
   function toCanvas(pt){
     return [ pivotX + (pt[0]-flowCache.cx0)*flowCache.scale,
@@ -557,27 +700,64 @@
     }
     vctx.restore();
 
-    // streamlines — real potential-flow paths, animated with marching dashes
+    const p = computePhysics(state);
     const speedNorm = Math.min(1, state.speed/140);
-    dashPhase -= 0.7 + speedNorm*2.0;
-    vctx.lineWidth = 1.6;
-    for (const line of flowCache.streamlines){
-      const near = Math.max(0, 1 - Math.abs(line.psv)/4.2);
-      const alpha = 0.16 + 0.42*near;
-      vctx.strokeStyle = 'rgba(90,200,250,'+alpha.toFixed(2)+')';
-      vctx.setLineDash([7,6]);
-      vctx.lineDashOffset = dashPhase;
-      vctx.beginPath();
-      line.pts.forEach((p,i)=>{
-        const c = toCanvas(p);
-        if (i===0) vctx.moveTo(c[0],c[1]); else vctx.lineTo(c[0],c[1]);
-      });
-      vctx.stroke();
+
+    if (state.showPressure){
+      // pressure field — replaces the airflow lines entirely
+      for (const ring of flowCache.pressureRings){
+        for (const pt of ring.pts){
+          const c = toCanvas(pt.pos);
+          vctx.fillStyle = cpColor(pt.cp, ring.alpha);
+          vctx.beginPath(); vctx.ellipse(c[0],c[1],14,14,0,0,Math.PI*2); vctx.fill();
+        }
+      }
+    } else {
+      // faint static trace of every streamline for overall shape/context —
+      // this alone already shows a stalled line's flattened/jittered break
+      vctx.lineWidth = 1.3;
+      for (const line of flowCache.streamlines){
+        const near = Math.max(0, 1 - Math.abs(line.psv)/4.2);
+        vctx.strokeStyle = 'rgba(90,200,250,'+(0.07+0.13*near).toFixed(2)+')';
+        vctx.beginPath();
+        line.pts.forEach((pt,i)=>{
+          const c = toCanvas(pt);
+          if (i===0) vctx.moveTo(c[0],c[1]); else vctx.lineTo(c[0],c[1]);
+        });
+        vctx.stroke();
+      }
+
+      // moving particles — step speed is the REAL local flow speed sampled along the
+      // line, so particles visibly speed up where the air speeds up (e.g. over the top
+      // of a lifting wing) and slow near stagnation points. They're not meant to reach
+      // the far edge together.
+      if (!particles.length) initParticles();
+      const tempoBase = 0.05*(0.45+1.25*speedNorm);
+      for (const prt of particles){
+        const line = flowCache.streamlines[prt.lineIdx];
+        const n = line.pts.length;
+        const i0 = Math.min(n-2, Math.floor(prt.idx));
+        const frac = prt.idx - i0;
+        const spd = line.speeds[i0]*(1-frac) + line.speeds[i0+1]*frac;
+        const curUnit = lerpPoint(line.pts[i0], line.pts[i0+1], frac);
+        const cur = toCanvas(curUnit);
+
+        if (prt.prevCanvas){
+          const b = 0.4 + 0.5*Math.min(1, spd/2.2);
+          vctx.strokeStyle = 'rgba(120,215,255,'+b.toFixed(2)+')';
+          vctx.lineWidth = 2;
+          vctx.beginPath();
+          vctx.moveTo(prt.prevCanvas[0], prt.prevCanvas[1]);
+          vctx.lineTo(cur[0], cur[1]);
+          vctx.stroke();
+        }
+        prt.prevCanvas = cur;
+        prt.idx += spd*tempoBase;
+        if (prt.idx >= n-2){ prt.idx = Math.random()*2; prt.prevCanvas = null; }
+      }
     }
-    vctx.setLineDash([]);
 
     // airfoil (filled, real Joukowski-mapped shape)
-    const p = computePhysics(state);
     vctx.beginPath();
     flowCache.surface.forEach((pt,i)=>{
       const c = toCanvas(pt);
@@ -591,11 +771,12 @@
     vctx.lineWidth = 2.2;
     vctx.stroke();
 
-    // force arrows overlaid on the wing
+    // force arrows overlaid on the wing — scaled against a FIXED ceiling (the largest
+    // force reachable anywhere in the slider ranges), so length is a true proportional
+    // read of the force rather than re-normalizing to the same size every frame
     if (state.showForces){
-      const refMax = Math.max(Math.abs(p.lift), Math.abs(p.drag), 1);
-      const maxLen = 78;
-      const sc = maxLen/refMax;
+      const maxLen = 82;
+      const sc = maxLen/FORCE_CEILING;
       const liftLen = p.lift*sc, dragLen = p.drag*sc;
       const ax = pivotX, ay = pivotY;
 
@@ -610,6 +791,42 @@
 
       vctx.fillStyle = '#5AC8FA';
       vctx.beginPath(); vctx.ellipse(ax,ay,3.5,3.5,0,0,Math.PI*2); vctx.fill();
+    }
+
+    // velocity triangle — local flow velocity just behind the trailing edge, split into
+    // its horizontal (streamwise) and vertical (deflection) components, so the downward
+    // turn the wing imparts to the air is visible as the vertical leg of the triangle
+    if (state.showVelocity){
+      const fc = flowCache;
+      const fxg0 = fc.rval*1.3, psv0 = 0.32;
+      const lyg0 = solveStreamY(fxg0, psv0, fc.rval, fc.gamval, state.aoa);
+      const anchorUnit = mapGeneratingPoint(fxg0, lyg0, fc.aoaRad, fc.xcval, fc.ycval);
+      const vel = velocityAt(fxg0, lyg0, fc.rval, fc.gamval, fc.aoaRad, fc.xcval, fc.ycval);
+      const A = toCanvas(anchorUnit);
+      const vx = vel[0]*fc.scale, vy = -vel[1]*fc.scale;
+      const Bx = A[0]+vx, By = A[1];
+      const Ex = A[0]+vx, Ey = A[1]+vy;
+
+      vctx.lineWidth = 1.8;
+      vctx.setLineDash([4,3]);
+      vctx.strokeStyle = 'rgba(231,238,248,0.5)';
+      vctx.beginPath(); vctx.moveTo(A[0],A[1]); vctx.lineTo(Bx,By); vctx.stroke();
+      vctx.strokeStyle = 'rgba(255,166,69,0.8)';
+      vctx.beginPath(); vctx.moveTo(Bx,By); vctx.lineTo(Ex,Ey); vctx.stroke();
+      vctx.setLineDash([]);
+
+      drawArrow(vctx, A[0],A[1], Ex,Ey, '#FFFFFF', 2.4);
+
+      vctx.fillStyle = '#5AC8FA';
+      vctx.beginPath(); vctx.ellipse(A[0],A[1],3,3,0,0,Math.PI*2); vctx.fill();
+
+      vctx.font = "600 10.5px 'IBM Plex Mono', monospace";
+      vctx.fillStyle = 'rgba(231,238,248,0.75)';
+      vctx.fillText('horizontal', Math.min(A[0],Bx)+4, By + (By>=A[1]?14:-7));
+      vctx.fillStyle = '#FFA645';
+      vctx.fillText('deflection', Bx+5, (By+Ey)/2);
+      vctx.fillStyle = '#FFFFFF';
+      vctx.fillText('local flow', Ex+5, Ey-6);
     }
 
     requestAnimationFrame(drawView);
@@ -650,8 +867,18 @@
 
   document.getElementById('forceToggle').addEventListener('click', function(){
     state.showForces = !state.showForces;
-    this.textContent = 'Force arrows: ' + (state.showForces ? 'on' : 'off');
+    this.textContent = 'Forces: ' + (state.showForces ? 'on' : 'off');
     this.classList.toggle('on', state.showForces);
+  });
+  document.getElementById('velToggle').addEventListener('click', function(){
+    state.showVelocity = !state.showVelocity;
+    this.textContent = 'Velocity: ' + (state.showVelocity ? 'on' : 'off');
+    this.classList.toggle('on', state.showVelocity);
+  });
+  document.getElementById('pressureToggle').addEventListener('click', function(){
+    state.showPressure = !state.showPressure;
+    this.textContent = 'Pressure: ' + (state.showPressure ? 'on' : 'off');
+    this.classList.toggle('on', state.showPressure);
   });
 
   const DEFAULTS = {aoa:6,camber:3.5,thickness:12,speed:60,alt:0,area:18,ar:8};
