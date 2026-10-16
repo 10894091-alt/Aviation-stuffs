@@ -97,6 +97,24 @@
   }
   .view-footer b{color:var(--ink);font-weight:600;}
 
+  .legend{
+    margin-top:9px;padding:7px 10px;pointer-events:none;
+    background:var(--panel2);border:1px solid var(--line-soft);border-radius:7px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-dim);
+    display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;
+  }
+  .legend .grp{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .legend .item{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+  .legend .sw{width:14px;height:0;border-top:3px solid;flex:none;border-radius:2px;}
+  .legend .sw.dash{border-top-style:dashed;}
+  .legend .bar{width:44px;height:7px;border-radius:4px;flex:none;}
+  .legend .head{color:var(--ink);font-weight:600;letter-spacing:.05em;font-size:9.5px;}
+  .wingnote{
+    margin-top:2px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--ink-faint);line-height:1.4;
+  }
+  .wingnote b{color:var(--ink-dim);font-weight:600;}
+
   /* ---- control panel ---- */
   .shapebtns{display:flex;gap:5px;margin-bottom:9px;}
   .shapebtns button{flex:1;padding:6px 4px;font-size:11.5px;}
@@ -126,13 +144,6 @@
 
   .divider{height:1px;background:var(--line-soft);margin:9px 0;}
 
-  .ar-preview{display:flex;align-items:center;gap:8px;margin-top:6px;}
-  .ar-shape{
-    height:10px;flex:none;border-radius:3px;
-    background:linear-gradient(90deg,#2F6A86,var(--accent));
-    transition:width .12s ease-out;
-  }
-  .ar-hint{font-size:9.5px;color:var(--ink-faint);line-height:1.3;}
 
   /* ---- flat data strip (spans full width, row 2) ---- */
   .data-strip-wrap{grid-column:1/3;}
@@ -181,7 +192,7 @@
       </div>
     </div>
     <div class="headerctrls">
-      <button id="unitToggle">Units: Imperial</button>
+      <button id="unitToggle">Units: Metric</button>
       <button id="resetBtn">Reset</button>
     </div>
   </header>
@@ -203,6 +214,7 @@
         <span>chord <b id="chordFooter">—</b></span>
         <span id="stallFooter"></span>
       </div>
+      <div id="legend" class="legend"></div>
     </div>
 
     <!-- CONTROL PANEL -->
@@ -237,18 +249,8 @@
         <div class="slider-label"><span>Altitude</span><span class="val" id="altVal">—</span></div>
         <input type="range" id="alt" min="0" max="9000" step="100" value="0">
       </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Wing area</span><span class="val" id="areaVal">—</span></div>
-        <input type="range" id="area" min="8" max="40" step="1" value="18">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>Aspect ratio</span><span class="val" id="arVal">8.0</span></div>
-        <input type="range" id="ar" min="4" max="14" step="0.5" value="8">
-        <div class="ar-preview">
-          <div class="ar-shape" id="arShape"></div>
-          <span class="ar-hint">span : chord — long, narrow wings cut drag and add lift</span>
-        </div>
-      </div>
+      <div class="divider"></div>
+      <div class="wingnote">Fixed wing: <b id="wingNote">—</b><br>typical light-aircraft wing (Cessna 172 class)</div>
     </div>
 
     <!-- FLAT DATA STRIP -->
@@ -283,16 +285,16 @@
     thickness: 12,
     speed: 60,
     alt: 0,
-    area: 18,
-    ar: 8,
-    units: 'imperial',
+    area: 16.2,   // m^2 — fixed, typical light aircraft (Cessna 172 class)
+    ar: 7.5,      // aspect ratio — fixed
+    units: 'metric',
     showForces: false,
     showVelocity: false,
     showPressure: false
   };
 
   const els = {};
-  ['aoa','camber','thickness','speed','alt','area','ar'].forEach(id=>{
+  ['aoa','camber','thickness','speed','alt'].forEach(id=>{
     els[id] = document.getElementById(id);
   });
 
@@ -377,9 +379,7 @@
     document.getElementById('thicknessVal').textContent = state.thickness.toFixed(0)+'%';
     document.getElementById('speedVal').textContent = fmtSpeed(state.speed);
     document.getElementById('altVal').textContent = fmtAlt(state.alt);
-    document.getElementById('areaVal').textContent = fmtArea(state.area);
-    document.getElementById('arVal').textContent = state.ar.toFixed(1);
-    document.getElementById('arShape').style.width = Math.round(state.ar*9)+'px';
+    document.getElementById('wingNote').textContent = fmtArea(state.area)+' · aspect ratio '+state.ar.toFixed(1);
 
     document.getElementById('clVal').textContent = p.cl.toFixed(3);
     document.getElementById('cdVal').textContent = p.cd.toFixed(3);
@@ -542,7 +542,14 @@
         }
         pts.push(pt);
       }
-      lines.push({psv, pts, speeds, separated});
+      // cumulative arc length so particles advance by real DISTANCE per frame, not by
+      // sample index (samples are dense near the body, sparse far away, so index
+      // stepping made dots crawl then leap — that was the jitter)
+      const arc = [0];
+      for (let i=1;i<pts.length;i++){
+        arc.push(arc[i-1] + Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]));
+      }
+      lines.push({psv, pts, speeds, separated, arc});
     }
     return lines;
   }
@@ -550,7 +557,7 @@
   function buildPressureRings(rval,xcval,ycval,gamval,aoaDeg){
     const aoaRad = toRad(aoaDeg);
     const multipliers = [1.035, 1.12, 1.25, 1.42, 1.65];
-    const alphas =      [0.5,   0.36, 0.25, 0.16, 0.09];
+    const alphas =      [0.62,  0.48, 0.36, 0.24, 0.13];
     const nTheta = 72;
     const rings = [];
     multipliers.forEach((m, ri)=>{
@@ -573,10 +580,10 @@
     let r,g,b;
     if (c <= 0){
       const t = c/-3;
-      r = 231 + (56-231)*t;  g = 238 + (150-238)*t;  b = 248 + (255-248)*t;
+      r = 231 + (30-231)*t;  g = 238 + (105-238)*t;  b = 248 + (255-248)*t;
     } else {
       const t = c/1.2;
-      r = 231 + (255-231)*t; g = 238 + (70-238)*t;   b = 248 + (60-248)*t;
+      r = 231 + (255-231)*t; g = 238 + (45-238)*t;   b = 248 + (45-248)*t;
     }
     return 'rgba('+(r|0)+','+(g|0)+','+(b|0)+','+alpha+')';
   }
@@ -605,18 +612,23 @@
     };
     if (particles.length) particles.forEach(prt=>{
       prt.prevCanvas = null;
-      const n = flowCache.streamlines[prt.lineIdx].pts.length;
-      if (prt.idx > n-2) prt.idx = Math.random()*2;
+      prt.segHint = 0;
+      const ln = flowCache.streamlines[prt.lineIdx];
+      const total = ln.arc[ln.arc.length-1];
+      if (prt.s > total) prt.s = Math.random()*total*0.05;
     });
   }
 
   let particles = [];
   function initParticles(){
     particles = [];
-    const perLine = 6;
+    const perLine = 12;
     flowCache.streamlines.forEach((line, li)=>{
+      const total = line.arc[line.arc.length-1];
       for (let k=0;k<perLine;k++){
-        particles.push({ lineIdx: li, idx: Math.random()*(line.pts.length-2), prevCanvas: null });
+        // evenly spread along the line (plus a little randomness) so the dots read as a
+        // steady stream rather than clumps
+        particles.push({ lineIdx: li, s: ((k+Math.random()*0.8)/perLine)*total, segHint: 0, prevCanvas: null });
       }
     });
   }
@@ -627,24 +639,23 @@
   // Lift and drag get their OWN ceilings (drag is typically an order of magnitude
   // smaller than lift, so sharing one scale would make the drag arrow nearly invisible).
   function computeForceCeilings(){
+    // The wing is now fixed, so the ceiling is the most lift/drag THAT wing can produce:
+    // top airspeed, sea-level density, then the best case over angle, camber and thickness.
     let maxLift = 1, maxDrag = 1;
-    const probe = {aoa:0, camber:0, thickness:12, speed:140, alt:0, area:40, ar:8};
-    for (let ar=4; ar<=14; ar+=2){
-      probe.ar = ar;
-      for (let cam=0; cam<=8; cam+=2){
-        probe.camber = cam;
-        for (let th=2; th<=20; th+=6){
-          probe.thickness = th;
-          for (let aoa=-20; aoa<=25; aoa+=1){
-            probe.aoa = aoa;
-            const pp = computePhysics(probe);
-            if (Math.abs(pp.lift) > maxLift) maxLift = Math.abs(pp.lift);
-            if (Math.abs(pp.drag) > maxDrag) maxDrag = Math.abs(pp.drag);
-          }
+    const probe = {aoa:0, camber:0, thickness:12, speed:140, alt:0, area:state.area, ar:state.ar};
+    for (let cam=0; cam<=8; cam+=1){
+      probe.camber = cam;
+      for (let th=2; th<=20; th+=3){
+        probe.thickness = th;
+        for (let aoa=-20; aoa<=25; aoa+=0.5){
+          probe.aoa = aoa;
+          const pp = computePhysics(probe);
+          if (Math.abs(pp.lift) > maxLift) maxLift = Math.abs(pp.lift);
+          if (Math.abs(pp.drag) > maxDrag) maxDrag = Math.abs(pp.drag);
         }
       }
     }
-    return { lift: maxLift*1.08, drag: maxDrag*1.08 };
+    return { lift: maxLift*1.05, drag: maxDrag*1.05 };
   }
   const FORCE_CEILING = computeForceCeilings();
 
@@ -711,7 +722,7 @@
         for (const pt of ring.pts){
           const c = toCanvas(pt.pos);
           vctx.fillStyle = cpColor(pt.cp, ring.alpha);
-          vctx.beginPath(); vctx.ellipse(c[0],c[1],14,14,0,0,Math.PI*2); vctx.fill();
+          vctx.beginPath(); vctx.ellipse(c[0],c[1],19,19,0,0,Math.PI*2); vctx.fill();
         }
       }
     } else {
@@ -734,33 +745,37 @@
       // of a lifting wing) and slow near stagnation points. They're not meant to reach
       // the far edge together.
       if (!particles.length) initParticles();
-      const tempoBase = 0.05*(0.45+1.25*speedNorm);
+      const tempoUnit = 0.075*(0.4+1.3*speedNorm);
       for (const prt of particles){
         const line = flowCache.streamlines[prt.lineIdx];
-        const n = line.pts.length;
-        const i0 = Math.min(n-2, Math.floor(prt.idx));
-        const frac = prt.idx - i0;
+        const arc = line.arc;
+        const total = arc[arc.length-1];
+        let i0 = prt.segHint;
+        while (i0 < arc.length-2 && arc[i0+1] < prt.s) i0++;
+        while (i0 > 0 && arc[i0] > prt.s) i0--;
+        prt.segHint = i0;
+        const segLen = Math.max(1e-6, arc[i0+1]-arc[i0]);
+        const frac = Math.min(1, Math.max(0, (prt.s-arc[i0])/segLen));
         const spd = line.speeds[i0]*(1-frac) + line.speeds[i0+1]*frac;
-        const curUnit = lerpPoint(line.pts[i0], line.pts[i0+1], frac);
-        const cur = toCanvas(curUnit);
+        const cur = toCanvas(lerpPoint(line.pts[i0], line.pts[i0+1], frac));
 
-        const b = 0.45 + 0.5*Math.min(1, spd/2.2);
+        // color + size encode local speed: slow = small deep-blue dot, fast = big pale-gold dot
+        const t = Math.min(1, Math.max(0, (spd-0.3)/1.9));
+        const cr = (70+185*t)|0, cg = (150+90*t)|0, cb = (255-125*t)|0;
         if (prt.prevCanvas){
-          vctx.strokeStyle = 'rgba(120,215,255,'+b.toFixed(2)+')';
-          vctx.lineWidth = 2;
+          vctx.strokeStyle = 'rgba('+cr+','+cg+','+cb+',0.55)';
+          vctx.lineWidth = 1.6+1.4*t;
           vctx.beginPath();
           vctx.moveTo(prt.prevCanvas[0], prt.prevCanvas[1]);
           vctx.lineTo(cur[0], cur[1]);
           vctx.stroke();
         }
-        // a distinct dot at the leading edge of each particle makes it much easier to
-        // track as a single moving thing (and to see it's moving faster than its neighbors)
-        vctx.fillStyle = 'rgba(180,235,255,'+Math.min(1,b+0.15).toFixed(2)+')';
-        vctx.beginPath(); vctx.ellipse(cur[0],cur[1],2.3,2.3,0,0,Math.PI*2); vctx.fill();
+        vctx.fillStyle = 'rgb('+cr+','+cg+','+cb+')';
+        vctx.beginPath(); vctx.ellipse(cur[0],cur[1],2+1.6*t,2+1.6*t,0,0,Math.PI*2); vctx.fill();
 
         prt.prevCanvas = cur;
-        prt.idx += spd*tempoBase;
-        if (prt.idx >= n-2){ prt.idx = Math.random()*2; prt.prevCanvas = null; }
+        prt.s += spd*tempoUnit;
+        if (prt.s >= total){ prt.s = Math.random()*total*0.03; prt.segHint = 0; prt.prevCanvas = null; }
       }
     }
 
@@ -791,12 +806,6 @@
       drawArrow(vctx, ax, ay, ax, ay-liftLen, '#49E3C4', 3.4);
       drawArrow(vctx, ax, ay, ax+dragLen, ay, '#FFA645', 3.4);
 
-      vctx.font = "600 12px 'IBM Plex Mono', monospace";
-      vctx.fillStyle = '#49E3C4';
-      vctx.fillText('L '+fmtForce(p.lift), ax+8, ay-liftLen-6);
-      vctx.fillStyle = '#FFA645';
-      vctx.fillText('D '+fmtForce(p.drag), ax+dragLen+8, ay+16);
-
       vctx.fillStyle = '#5AC8FA';
       vctx.beginPath(); vctx.ellipse(ax,ay,3.5,3.5,0,0,Math.PI*2); vctx.fill();
     }
@@ -820,7 +829,7 @@
       vctx.setLineDash([5,4]);
       vctx.strokeStyle = 'rgba(231,238,248,0.65)';
       vctx.beginPath(); vctx.moveTo(A[0],A[1]); vctx.lineTo(Bx,By); vctx.stroke();
-      vctx.strokeStyle = 'rgba(255,166,69,0.9)';
+      vctx.strokeStyle = 'rgba(183,156,255,0.95)';
       vctx.beginPath(); vctx.moveTo(Bx,By); vctx.lineTo(Ex,Ey); vctx.stroke();
       vctx.setLineDash([]);
 
@@ -829,16 +838,33 @@
       vctx.fillStyle = '#5AC8FA';
       vctx.beginPath(); vctx.ellipse(A[0],A[1],4,4,0,0,Math.PI*2); vctx.fill();
 
-      vctx.font = "600 12px 'IBM Plex Mono', monospace";
-      vctx.fillStyle = 'rgba(231,238,248,0.85)';
-      vctx.fillText('horizontal', Math.min(A[0],Bx)+4, By + (By>=A[1]?16:-8));
-      vctx.fillStyle = '#FFA645';
-      vctx.fillText('deflection', Bx+6, (By+Ey)/2);
-      vctx.fillStyle = '#FFFFFF';
-      vctx.fillText('local flow', Ex+6, Ey-7);
     }
 
     requestAnimationFrame(drawView);
+  }
+
+  /* ============================= KEY (under the view window) ============================= */
+  function updateLegend(){
+    const sw = (c,dash)=>'<span class="sw'+(dash?' dash':'')+'" style="border-color:'+c+'"></span>';
+    const grp = (head, items)=>'<div class="grp"><span class="head">'+head+'</span>'+
+      items.map(i=>'<span class="item">'+i+'</span>').join('')+'</div>';
+    const g = [];
+    if (state.showPressure){
+      g.push(grp('PRESSURE', [
+        '<span class="bar" style="background:linear-gradient(90deg,#1E69FF,#E7EEF8,#FF2D2D)"></span>',
+        'blue = low (fast air)', 'red = high (slow air)']));
+    } else {
+      g.push(grp('AIR SPEED', [
+        '<span class="bar" style="background:linear-gradient(90deg,#46A0FF,#FFF082)"></span>slow → fast']));
+    }
+    if (state.showForces){
+      g.push(grp('FORCES', [sw('#49E3C4')+'Lift (up)', sw('#FFA645')+'Drag (aft)']));
+    }
+    if (state.showVelocity){
+      g.push(grp('VELOCITY', [sw('#FFFFFF')+'Local flow', sw('#C8D2E2',true)+'Horizontal',
+        sw('#B79CFF',true)+'Vertical (deflection)']));
+    }
+    document.getElementById('legend').innerHTML = g.join('');
   }
 
   /* ============================= EVENTS ============================= */
@@ -854,8 +880,6 @@
   bindSlider('thickness','thickness',true,true);
   bindSlider('speed','speed',true,false);
   bindSlider('alt','alt',true,false);
-  bindSlider('area','area',true,false);
-  bindSlider('ar','ar',false,false);
 
   document.querySelectorAll('.shapebtn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -878,19 +902,22 @@
     state.showForces = !state.showForces;
     this.textContent = 'Forces: ' + (state.showForces ? 'on' : 'off');
     this.classList.toggle('on', state.showForces);
+    updateLegend();
   });
   document.getElementById('velToggle').addEventListener('click', function(){
     state.showVelocity = !state.showVelocity;
     this.textContent = 'Velocity: ' + (state.showVelocity ? 'on' : 'off');
     this.classList.toggle('on', state.showVelocity);
+    updateLegend();
   });
   document.getElementById('pressureToggle').addEventListener('click', function(){
     state.showPressure = !state.showPressure;
     this.textContent = 'Pressure: ' + (state.showPressure ? 'on' : 'off');
     this.classList.toggle('on', state.showPressure);
+    updateLegend();
   });
 
-  const DEFAULTS = {aoa:6,camber:3.5,thickness:12,speed:60,alt:0,area:18,ar:8};
+  const DEFAULTS = {aoa:6,camber:3.5,thickness:12,speed:60,alt:0};
   document.getElementById('resetBtn').addEventListener('click', ()=>{
     Object.assign(state, DEFAULTS);
     Object.keys(DEFAULTS).forEach(k=>{ if(els[k]) els[k].value = DEFAULTS[k]; });
@@ -901,6 +928,7 @@
   /* ============================= INIT ============================= */
   rebuildFlow();
   updateReadouts();
+  updateLegend();
   requestAnimationFrame(drawView);
 
 })();
